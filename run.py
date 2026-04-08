@@ -89,7 +89,7 @@ class PolyHeader(Buffer):
 def test_nested():
     import writepolys
 
-    writepolys()
+    writepolys.write_polys("polys.bin", writepolys.polys)
     f = open("polys.bin", "rb")
     ph = PolyHeader.from_file(f)
-    assert ph.code == 0x1234
+    assert ph.file_code == 0x1234
