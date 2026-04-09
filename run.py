@@ -65,6 +65,9 @@ class Buffer(metaclass=AutoField):
     def __init__(self, bytedata):
         self._buffer = memoryview(bytedata)
 
+    def as_tuple(self):
+        return tuple(getattr(self, tup[1]) for tup in self._fields)
+
     @classmethod
     def from_file(cls, f: BinaryIO):
         return cls(f.read(cls.buffer_size))
@@ -75,9 +78,6 @@ class Point(Buffer):
         ("<d", "x"),
         ("d", "y"),
     ]
-
-    def as_tuple(self):
-        return (self.x, self.y)
 
 
 class PolyHeader(Buffer):
