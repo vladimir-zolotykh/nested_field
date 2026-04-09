@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # PYTHON_ARGCOMPLETE_OK
 import os
-from typing import BinaryIO
+from typing import BinaryIO, ClassVar, cast, Type, Any
 from struct import Struct, calcsize
 import logging
 
@@ -68,7 +68,7 @@ class AutoField(type):
         offset = 0
         for format_or_cls, attr in fields:
             if isinstance(format_or_cls, AutoField):
-                buffer_cls: Buffer = format_or_cls
+                buffer_cls = cast(Type["Buffer"], format_or_cls)
                 nested = Nested(buffer_cls, offset)
                 nested.__set_name__(None, attr)
                 setattr(cls, attr, nested)
@@ -85,6 +85,9 @@ class AutoField(type):
 
 
 class Buffer(metaclass=AutoField):
+    _fields: ClassVar[list[tuple[Any, str]]] = []
+    buffer_size: ClassVar[int] = 0
+
     def __init__(self, bytedata):
         self._buffer = memoryview(bytedata)
 
