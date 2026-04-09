@@ -8,7 +8,7 @@ polys = [
 ]
 
 
-def write_polys(filename, polys):
+def write_polys(filename: str, polys: list[list[tuple[float, float]]]):
     # Determine bounding box
     flattened = list(itertools.chain(*polys))
     min_x = min(x for x, y in flattened)
