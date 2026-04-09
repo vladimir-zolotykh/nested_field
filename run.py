@@ -6,10 +6,12 @@ from typing import BinaryIO
 from struct import Struct, calcsize
 import logging
 
+LOGFILENAME = f".{os.path.splitext(os.path.basename(__file__))[0]}.log"
+
 
 def get_logger(
     name,
-    logfilename: str = None,
+    logfilename: str,
     loglevel=logging.DEBUG,
     logformat="%(levelname)s: %(name)s %(message)s",
     filemode: str = "w",
@@ -20,8 +22,6 @@ def get_logger(
         return logger
     logger.setLevel(loglevel)
     logger.propagate = True
-    if logfilename is None:
-        logfilename = f".{os.path.splitext(os.path.basename(__file__))[0]}.log"
     handler = (
         logging.FileHandler(logfilename, mode=filemode)
         if logfilename is not None
@@ -42,7 +42,7 @@ class Field:
             Struct(format_or_type) if isinstance(format_or_type, str) else None
         )
 
-    def __set_name__(self, owner, name):
+    def __set_name__(self, owner: object, name: str):
         self.name = name
 
     def __get__(self, instance, owner=None):
@@ -51,7 +51,7 @@ class Field:
         if self.struct:
             r = self.struct.unpack_from(instance._buffer, self.offset)
             return r[0] if len(r) == 1 else r
-        logger = get_logger(self.__class__.__name__)
+        logger = get_logger(self.__class__.__name__, LOGFILENAME)
         logger.info(f"{owner.buffer_size = }, {self.format_or_type.buffer_size = }")
         buffer_slice = slice(self.offset, self.offset + self.format_or_type.buffer_size)
         field: Buffer = self.format_or_type(instance._buffer[buffer_slice])
@@ -69,7 +69,7 @@ class AutoField(type):
         offset = 0
         for format_or_cls, attr in fields:
             if isinstance(format_or_cls, AutoField):
-                buffer_cls: Point | PolyHeader = format_or_cls
+                buffer_cls: Buffer = format_or_cls
                 nested = Nested(buffer_cls, offset)
                 nested.__set_name__(None, attr)
                 setattr(cls, attr, nested)
