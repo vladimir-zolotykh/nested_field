@@ -34,9 +34,8 @@ def get_logger(
 
 
 class Field:
-    def __init__(self, format_or_type, offset):
-        self.name = None
-        self.offset = offset
+    def __init__(self, format_or_type, offset: int):
+        self.offset: int = offset
         self.format_or_type = format_or_type
         self.struct = (
             Struct(format_or_type) if isinstance(format_or_type, str) else None
