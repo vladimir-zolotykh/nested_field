@@ -10,30 +10,24 @@ import logging
 def get_logger(
     name,
     logfilename: str = None,
-    loglevel = logging.DEBUG,
-    logformat = "%(levelname)s: %(name)s %(message)s",,
+    loglevel=logging.DEBUG,
+    logformat="%(levelname)s: %(name)s %(message)s",
     filemode: str = "w",
-    datefmt = "%H:%M:%S",
+    datefmt="%H:%M:%S",
 ):
     logger = logging.getLogger(name)
-    logger.setLevel(loglevel)
-    logger.propagate = True
     if logger.handlers:
         return logger
+    logger.setLevel(loglevel)
+    logger.propagate = True
+    if logfilename is None:
+        logfilename = f".{os.path.splitext(os.path.basename(__file__))[0]}.log"
     handler = (
-        logging.FileHandler(filename, mode=filemode)
-        if filename is not None
+        logging.FileHandler(logfilename, mode=filemode)
+        if logfilename is not None
         else logging.StreamHandler()
     )
-    formatter = logger.Formatter(logformat, datefmt=datefmt)
-    filename = (logfilename
-                if logfilename is not None
-                else os.path.splitext(os.path.basename(__file__))[0])
-    handler = (
-        logging.FileHandler(filename, mode=filemode)
-        if filename is not None
-        else logging.StreamHandler()
-    )
+    formatter = logging.Formatter(logformat, datefmt=datefmt)
     handler.setFormatter(formatter)
     logger.addHandler(handler)
     return logger
@@ -57,8 +51,8 @@ class Field:
         if self.struct:
             r = self.struct.unpack_from(instance._buffer, self.offset)
             return r[0] if len(r) == 1 else r
-        # buffer_slice = slice(self.offset, self.offset + owner.buffer_size)
-        logger.info(f"{owner = }, {self.format_or_type = }")
+        logger = get_logger(self.__class__.__name__)
+        logger.info(f"{owner.buffer_size = }, {self.format_or_type.buffer_size = }")
         buffer_slice = slice(self.offset, self.offset + self.format_or_type.buffer_size)
         field: Buffer = self.format_or_type(instance._buffer[buffer_slice])
         setattr(instance, self.name, field)
@@ -138,6 +132,6 @@ if __name__ == "__main__":
     f = open("polys.bin", "rb")
     ph = PolyHeader.from_file(f)
     print(f"{ph.file_code:x}")
-    print(ph.min)
-    print(ph.max)
+    print(ph.min.as_tuple())
+    print(ph.max.as_tuple())
     print(ph.num_polys)
