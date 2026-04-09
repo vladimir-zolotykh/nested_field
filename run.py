@@ -76,8 +76,8 @@ class Point(Buffer):
         ("d", "y"),
     ]
 
-    def __repr__(self):
-        return f"{self.__class__.__name__}({self.x}, {self.y})"
+    def as_tuple(self):
+        return (self.x, self.y)
 
 
 class PolyHeader(Buffer):
@@ -96,6 +96,9 @@ def test_nested():
     f = open("polys.bin", "rb")
     ph = PolyHeader.from_file(f)
     assert ph.file_code == 0x1234
+    assert ph.min.as_tuple() == (0.5, 0.5)
+    assert ph.max.as_tuple() == (7.0, 9.2)
+    assert ph.num_polys == 3
 
 
 if __name__ == "__main__":
