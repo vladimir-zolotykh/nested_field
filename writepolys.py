@@ -21,7 +21,6 @@ def boundingbox(polys: Poly5Type) -> tuple[PointType, PointType]:
     return (x1, y1), (x2, y2)
 
 
-# def write_polys(filename: str, polys: list[list[tuple[float, float]]]):
 def write_polys(filename: str, polys: Poly5Type) -> None:
     # Determine bounding box
     flattened = list(itertools.chain(*polys))
