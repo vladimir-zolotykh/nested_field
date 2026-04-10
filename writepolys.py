@@ -1,9 +1,9 @@
 import struct
 import itertools
 
-Poly1Type = list[tuple[float, float]]
-Poly5Type = list[Poly1Type]
-polys: Poly5Type = [
+PolyType = list[tuple[float, float]]
+PolysType = list[PolyType]
+polys: PolysType = [
     [(1.0, 2.5), (3.5, 4.0), (2.5, 1.5)],
     [(7.0, 1.2), (5.1, 3.0), (0.5, 7.5), (0.8, 9.0)],
     [(3.4, 6.3), (1.2, 0.5), (4.6, 9.2)],
@@ -12,7 +12,7 @@ polys: Poly5Type = [
 PointType = tuple[float, float]
 
 
-def boundingbox(polys: Poly5Type) -> tuple[PointType, PointType]:
+def boundingbox(polys: PolysType) -> tuple[PointType, PointType]:
     flattened = list(itertools.chain(*polys))
     x1 = min(x for x, y in flattened)
     x2 = max(x for x, y in flattened)
@@ -21,7 +21,7 @@ def boundingbox(polys: Poly5Type) -> tuple[PointType, PointType]:
     return (x1, y1), (x2, y2)
 
 
-def write_polys(filename: str, polys: Poly5Type) -> None:
+def write_polys(filename: str, polys: PolysType) -> None:
     # Determine bounding box
     flattened = list(itertools.chain(*polys))
     min_x = min(x for x, y in flattened)
