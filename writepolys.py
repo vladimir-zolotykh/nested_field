@@ -13,6 +13,7 @@ PointType = tuple[float, float]
 
 
 def boundingbox(polys: PolysType) -> tuple[PointType, PointType]:
+    # Determine bounding box
     flattened = list(itertools.chain(*polys))
     x1 = min(x for x, y in flattened)
     x2 = max(x for x, y in flattened)
@@ -22,14 +23,9 @@ def boundingbox(polys: PolysType) -> tuple[PointType, PointType]:
 
 
 def write_polys(filename: str, polys: PolysType) -> None:
-    # Determine bounding box
-    flattened = list(itertools.chain(*polys))
-    min_x = min(x for x, y in flattened)
-    max_x = max(x for x, y in flattened)
-    min_y = min(y for x, y in flattened)
-    max_y = max(y for x, y in flattened)
     bb = boundingbox(polys)
-    assert (min_x, min_y) == bb[0] and (max_x, max_y) == bb[1]
+    min_x, min_y = bb[0]
+    max_x, max_y = bb[1]
 
     with open(filename, "wb") as f:
         f.write(struct.pack("<iddddi", 0x1234, min_x, min_y, max_x, max_y, len(polys)))
