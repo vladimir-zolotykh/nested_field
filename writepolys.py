@@ -9,6 +9,17 @@ polys: Poly5Type = [
     [(3.4, 6.3), (1.2, 0.5), (4.6, 9.2)],
 ]
 
+PointType = tuple[float, float]
+
+
+def boundingbox(polys: Poly5Type) -> tuple[PointType, PointType]:
+    flattened = list(itertools.chain(*polys))
+    x1 = min(x for x, y in flattened)
+    x2 = max(x for x, y in flattened)
+    y1 = min(y for x, y in flattened)
+    y2 = max(y for x, y in flattened)
+    return (x1, y1), (x2, y2)
+
 
 # def write_polys(filename: str, polys: list[list[tuple[float, float]]]):
 def write_polys(filename: str, polys: Poly5Type) -> None:
@@ -18,6 +29,8 @@ def write_polys(filename: str, polys: Poly5Type) -> None:
     max_x = max(x for x, y in flattened)
     min_y = min(y for x, y in flattened)
     max_y = max(y for x, y in flattened)
+    bb = boundingbox(polys)
+    assert (min_x, min_y) == bb[0] and (max_x, max_y) == bb[1]
 
     with open(filename, "wb") as f:
         f.write(struct.pack("<iddddi", 0x1234, min_x, min_y, max_x, max_y, len(polys)))
