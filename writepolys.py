@@ -31,8 +31,9 @@ def write_polys(filename: str, polys: PolysType) -> None:
         f.write(struct.pack("<iddddi", 0x1234, min_x, min_y, max_x, max_y, len(polys)))
 
         for poly in polys:
-            size = len(poly) * struct.calcsize("<dd")
-            f.write(struct.pack("<i", size + 4))
+            # size = len(poly) * struct.calcsize("<dd")
+            # f.write(struct.pack("<i", size + 4))
+            f.write(struct.pack("<i", len(poly)))
             for pt in poly:
                 f.write(struct.pack("<dd", *pt))
 
