@@ -13,6 +13,7 @@ class SizedRecord:
     @classmethod
     def from_file(cls, f: BinaryIO, format_or_type) -> "SizedRecord":
         def calc_record_size() -> int:
+            # Do not read the file
             return (
                 struct.calcsize(format_or_type)
                 if isinstance(format_or_type, str)
@@ -35,8 +36,8 @@ class SizedRecord:
                 else format_or_type.buffer_size
             )
 
-        for offset in range(0, len(self._buffer)):
-            size = calc_record_size()
+        size = calc_record_size()
+        for offset in range(0, len(self._buffer), size):
             end = offset + size
             yield (
                 struct.unpack_from(format_or_type, self._buffer[offset:end])
