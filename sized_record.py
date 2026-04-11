@@ -19,9 +19,13 @@ class SizedRecord:
                 else format_or_type.buffer_size
             )
 
-        nrecords = f.read(struct.calcsize("<i"))
-        size = get_record_size() * nrecords
-        cls(f.read(size))
+        def read_unpack(fmt="<i"):
+            s = struct.Struct(fmt)
+            tup = s.unpack(f.read(s.size))
+            return tup[0] if len(tup) == 1 else tup
+
+        size = get_record_size() * read_unpack("<i")
+        return cls(f.read(size))
 
     def iter_as(self, format_or_type):
         def get_record_size() -> int:
@@ -41,12 +45,28 @@ class SizedRecord:
             )
 
 
+class Point(AF.Buffer):
+    _fields = [
+        ("<d", "x"),
+        ("d", "y"),
+    ]
+
+
+class PolyHeader(AF.Buffer):
+    _fields = [
+        ("<i", "file_code"),
+        (Point, "min"),
+        (Point, "max"),
+        ("i", "num_polys"),
+    ]
+
+
 if __name__ == "__main__":
     from writepolys import write_polys, polys
 
     write_polys("polys.bin", polys)
     with open("polys.bin", "rb") as f:
-        poly_header = AF.PolyHeader.from_file(f)
+        poly_header = PolyHeader.from_file(f)
         num_polys = poly_header.num_polys
-        records = [SizedRecord.from_file(f, "<dd") for _ in num_polys]
+        records = [SizedRecord.from_file(f, "<dd") for _ in range(num_polys)]
         print(records)
