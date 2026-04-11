@@ -66,5 +66,6 @@ if __name__ == "__main__":
         num_polys = poly_header.num_polys
         records = [SizedRecord.from_file(f, "<dd") for _ in range(num_polys)]
         for rec in records:
-            for dd in rec.iter_as("<dd"):
-                print(dd)
+            # for dd in rec.iter_as("<dd"):
+            for dd in rec.iter_as(Point):
+                print(dd.as_tuple())
