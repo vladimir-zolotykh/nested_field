@@ -42,3 +42,5 @@ if __name__ == "__main__":
     print(ph.min.as_tuple())
     print(ph.max.as_tuple())
     print(ph.num_polys)
+# how to test:
+# $ pytest run.py::test_nested -v
