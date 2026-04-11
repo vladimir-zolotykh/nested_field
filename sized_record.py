@@ -12,7 +12,7 @@ class SizedRecord:
 
     @classmethod
     def from_file(cls, f: BinaryIO, format_or_type) -> "SizedRecord":
-        def get_record_size() -> int:
+        def calc_record_size() -> int:
             return (
                 struct.calcsize(format_or_type)
                 if isinstance(format_or_type, str)
@@ -24,11 +24,11 @@ class SizedRecord:
             tup = s.unpack(f.read(s.size))
             return tup[0] if len(tup) == 1 else tup
 
-        size = get_record_size() * read_unpack("<i")
+        size = calc_record_size() * read_unpack("<i")
         return cls(f.read(size))
 
     def iter_as(self, format_or_type):
-        def get_record_size() -> int:
+        def calc_record_size() -> int:
             return (
                 struct.calcsize(format_or_type)
                 if isinstance(format_or_type, str)
@@ -36,7 +36,7 @@ class SizedRecord:
             )
 
         for offset in range(0, len(self._buffer)):
-            size = get_record_size()
+            size = calc_record_size()
             end = offset + size
             yield (
                 struct.unpack_from(format_or_type, self._buffer[offset:end])
@@ -69,4 +69,6 @@ if __name__ == "__main__":
         poly_header = PolyHeader.from_file(f)
         num_polys = poly_header.num_polys
         records = [SizedRecord.from_file(f, "<dd") for _ in range(num_polys)]
-        print(records)
+        for rec in records:
+            for dd in rec.iter_as("<dd"):
+                print(dd)
