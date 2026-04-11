@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # PYTHON_ARGCOMPLETE_OK
+from typing import Any, Iterator
 from typing import BinaryIO
 import struct
 import autofield as AF
@@ -10,33 +11,27 @@ class SizedRecord:
     def __init__(self, bytedata):
         self._buffer = memoryview(bytedata)
 
+    @staticmethod
+    def calc_record_size(format_or_type) -> int:
+        # Do not read the file
+        return (
+            struct.calcsize(format_or_type)
+            if isinstance(format_or_type, str)
+            else format_or_type.buffer_size
+        )
+
     @classmethod
     def from_file(cls, f: BinaryIO, format_or_type) -> "SizedRecord":
-        def calc_record_size() -> int:
-            # Do not read the file
-            return (
-                struct.calcsize(format_or_type)
-                if isinstance(format_or_type, str)
-                else format_or_type.buffer_size
-            )
-
-        def read_unpack(fmt="<i"):
+        def read_unpack(fmt="<i") -> Any:
             s = struct.Struct(fmt)
             tup = s.unpack(f.read(s.size))
             return tup[0] if len(tup) == 1 else tup
 
-        size = calc_record_size() * read_unpack("<i")
+        size = SizedRecord.calc_record_size(format_or_type) * read_unpack("<i")
         return cls(f.read(size))
 
-    def iter_as(self, format_or_type):
-        def calc_record_size() -> int:
-            return (
-                struct.calcsize(format_or_type)
-                if isinstance(format_or_type, str)
-                else format_or_type.buffer_size
-            )
-
-        size = calc_record_size()
+    def iter_as(self, format_or_type) -> Iterator[Any]:
+        size = SizedRecord.calc_record_size(format_or_type)
         for offset in range(0, len(self._buffer), size):
             end = offset + size
             yield (
