@@ -113,19 +113,3 @@ class Buffer(metaclass=AutoField):
     @classmethod
     def from_file(cls, f: BinaryIO):
         return cls(f.read(cls.buffer_size))
-
-
-class Point(Buffer):
-    _fields = [
-        ("<d", "x"),
-        ("d", "y"),
-    ]
-
-
-class PolyHeader(Buffer):
-    _fields = [
-        ("<i", "file_code"),
-        (Point, "min"),
-        (Point, "max"),
-        ("i", "num_polys"),
-    ]

@@ -44,20 +44,20 @@ class SizedRecord:
                 yield format_or_type(chunk)
 
 
-# class Point(AF.Buffer):
-#     _fields = [
-#         ("<d", "x"),
-#         ("d", "y"),
-#     ]
+class Point(AF.Buffer):
+    _fields = [
+        ("<d", "x"),
+        ("d", "y"),
+    ]
 
 
-# class PolyHeader(AF.Buffer):
-#     _fields = [
-#         ("<i", "file_code"),
-#         (Point, "min"),
-#         (Point, "max"),
-#         ("i", "num_polys"),
-#     ]
+class PolyHeader(AF.Buffer):
+    _fields = [
+        ("<i", "file_code"),
+        (Point, "min"),
+        (Point, "max"),
+        ("i", "num_polys"),
+    ]
 
 
 if __name__ == "__main__":
@@ -65,10 +65,10 @@ if __name__ == "__main__":
 
     write_polys("polys.bin", polys)
     with open("polys.bin", "rb") as f:
-        poly_header = AF.PolyHeader.from_file(f)
+        poly_header = PolyHeader.from_file(f)
         num_polys = poly_header.num_polys
         records = [SizedRecord.from_file(f, "<dd") for _ in range(num_polys)]
         for rec in records:
             # for dd in rec.iter_as("<dd"):
-            for dd in rec.iter_as(AF.Point):
+            for dd in rec.iter_as(Point):
                 print(dd.as_tuple())
