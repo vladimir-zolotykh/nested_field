@@ -3,7 +3,7 @@
 # PYTHON_ARGCOMPLETE_OK
 import os
 from typing import BinaryIO, ClassVar, cast, Any
-from typing import Union, Type, Protocol, TypeVar, runtime_checkable
+from typing import Union, Type, Protocol, runtime_checkable
 
 from struct import Struct, calcsize
 import logging
@@ -13,13 +13,14 @@ LOGFILENAME = f".{os.path.splitext(os.path.basename(__file__))[0]}.log"
 
 @runtime_checkable
 class BufferProtocol(Protocol):
-    buffer_size: int
+    buffer_size: ClassVar[int]
 
-    def __call__(self, bytedata: Union[bytes, memoryview]) -> Any: ...  # noqa: E704
+    def __call__(self, bytedata: Union[bytes, memoryview]) -> Any:
+        pass
 
 
-FormatOrBuffer = Union[str, Type[BufferProtocol]]
-T = TypeVar("T")
+BufferType = Type["Buffer"]
+FormatOrBuffer = Union[str, BufferType]
 
 
 def get_logger(
@@ -82,8 +83,8 @@ class AutoField(type):
         fields = getattr(cls, "_fields", [])
         offset = 0
         for format_or_cls, attr in fields:
-            if isinstance(format_or_cls, AutoField):
-                buffer_cls = cast(Type[BufferProtocol], format_or_cls)
+            if isinstance(format_or_cls, type) and issubclass(format_or_cls, Buffer):
+                buffer_cls = format_or_cls
                 nested = Nested(buffer_cls, offset)
                 nested.__set_name__(None, attr)
                 setattr(cls, attr, nested)
@@ -112,3 +113,19 @@ class Buffer(metaclass=AutoField):
     @classmethod
     def from_file(cls, f: BinaryIO):
         return cls(f.read(cls.buffer_size))
+
+
+class Point(Buffer):
+    _fields = [
+        ("<d", "x"),
+        ("d", "y"),
+    ]
+
+
+class PolyHeader(Buffer):
+    _fields = [
+        ("<i", "file_code"),
+        (Point, "min"),
+        (Point, "max"),
+        ("i", "num_polys"),
+    ]
