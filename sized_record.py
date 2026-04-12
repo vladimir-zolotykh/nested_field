@@ -1,18 +1,19 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # PYTHON_ARGCOMPLETE_OK
-from typing import Any, Iterator
+from typing import Any, Iterator, Type, cast
+from typing import Union
 from typing import BinaryIO
 import struct
 import autofield as AF
 
 
 class SizedRecord:
-    def __init__(self, bytedata):
+    def __init__(self, bytedata: Union[bytes, memoryview]):
         self._buffer = memoryview(bytedata)
 
     @staticmethod
-    def calc_record_size(format_or_type) -> int:
+    def calc_record_size(format_or_type: AF.FormatOrBuffer) -> int:
         # Do not read the file
         return (
             struct.calcsize(format_or_type)
@@ -21,7 +22,7 @@ class SizedRecord:
         )
 
     @classmethod
-    def from_file(cls, f: BinaryIO, format_or_type) -> "SizedRecord":
+    def from_file(cls, f: BinaryIO, format_or_type: AF.FormatOrBuffer) -> "SizedRecord":
         def read_unpack(fmt="<i") -> Any:
             s = struct.Struct(fmt)
             tup = s.unpack(f.read(s.size))
@@ -30,15 +31,15 @@ class SizedRecord:
         size = SizedRecord.calc_record_size(format_or_type) * read_unpack("<i")
         return cls(f.read(size))
 
-    def iter_as(self, format_or_type) -> Iterator[Any]:
-        size = SizedRecord.calc_record_size(format_or_type)
+    def iter_as(self, format_or_type: Union[str, Type[AF.T]]) -> Iterator[AF.T]:
+        size = SizedRecord.calc_record_size(cast(AF.FormatOrBuffer, format_or_type))
         for offset in range(0, len(self._buffer), size):
             end = offset + size
-            yield (
-                struct.unpack_from(format_or_type, self._buffer[offset:end])
-                if isinstance(format_or_type, str)
-                else format_or_type(self._buffer[offset:end])
-            )
+            chunk = self._buffer[offset:end]
+            if isinstance(format_or_type, str):
+                yield cast(AF.T, struct.unpack_from(format_or_type, chunk))
+            else:
+                yield format_or_type(chunk)  # type: ignore
 
 
 class Point(AF.Buffer):
